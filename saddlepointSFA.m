@@ -29,55 +29,25 @@ omega=2*pi*299792458/lambda *24.2e-18; %laser freq. in a.u.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% queries
 
-if ~exist('choice','var')
-    choice = mymenu('How many CPU cores do you want to use?',{'One','Two','Three','Dunno, you decide.'}, 2);
-end
-if choice == 1
-    maxNumCompThreads(1);
-%     if matlabpool('size') == 0 || matlabpool('size') == 1
-%     else
-%         matlabpool close force local 
-%     end
- elseif choice == 2
-     maxNumCompThreads(2);
-%     if matlabpool('size') == 2
-%     elseif matlabpool('size') == 0
-%         matlabpool open local 2
-%     else
-%         matlabpool close force local 
-%         matlabpool open local 2
-%     end
- elseif choice == 3
-     maxNumCompThreads(3);
-%     if matlabpool('size') == 3
-%     elseif matlabpool('size') == 0
-%         matlabpool open local 3
-%     else
-%         matlabpool close force local 
-%         matlabpool open local 3
-%     end
- elseif choice == 4
-      maxNumCompThreads('automatic') 
-%     if matlabpool('size') == 4
-%     elseif matlabpool('size') == 0
-%         matlabpool open local 4
-%     else
-%         matlabpool close force local 
-%         matlabpool open local 4
-%     end
-else
-     maxNumCompThreads('automatic') 
-%     if matlabpool('size') == 2
-%     elseif matlabpool('size') == 0
-%         matlabpool open local 2
-%     else
-%         matlabpool close force local 
-%         matlabpool open local 2
-%     end
- end
-% clear choice
-% pause(.5)
-disp(['Using max. ',num2str(maxNumCompThreads),' cpu cores.']);
+%maxNumCompThreads will be removed from future releases because they can't
+%control from within matlab anymore how many threads will be used. So
+% if ~exist('choice','var')
+%     choice = mymenu('How many CPU cores do you want to use?',{'One','Two','Three','Dunno, you decide.'}, 2);
+% end
+% if choice == 1
+%     maxNumCompThreads(1);
+%  elseif choice == 2
+%      maxNumCompThreads(2);
+%  elseif choice == 3
+%      maxNumCompThreads(3);
+%  elseif choice == 4
+%       maxNumCompThreads('automatic') 
+% else
+%      maxNumCompThreads('automatic') 
+%  end
+% 
+% disp(['Using max. ',num2str(maxNumCompThreads),' cpu cores.']);
+
 %saveimgs = mymenu('Do you want to save all the figures?',{'sure.','nope.'}, 1);
 %pause(.5)
 
