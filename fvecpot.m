@@ -20,24 +20,25 @@ function A = fvecpot(t,I0,tau,omega,freqs,tlim)
 
 [m,~]=size(freqs);
 if tau<0
-    A= -sum( (sqrt(freqs(:,2)*I0)./(freqs(:,1)*omega)*ones(1,length(t))) .*1 .*(sin(freqs(:,1)*omega*t+(freqs(:,3))*ones(1,length(t)))) ,1);
+    envelopes = 1;
 else
   if length(tau)==m
-      envelopes = cos(1./tau *t *2*acos(2^(-0.25))).^2;
-        % make sure that the colors with the shorter envelopes have zero
-        % envelope outside their central cos^2-peak
-        [~,tauindx] = sort(tau);
-        for n=1:length(tauindx)-1
-            envelopes(tauindx(n),[find(t< -tlim/tau(tauindx(end))*tau(tauindx(n))), find(t> tlim/tau(tauindx(end))*tau(tauindx(n)))] )=0;
-        end 
-      % sum up the vector-potentials
-    A= -sum( (sqrt(freqs(:,2)*I0)./(freqs(:,1)*omega)*ones(1,length(t))) .* envelopes .*(sin(freqs(:,1)*omega*t+(freqs(:,3))*ones(1,length(t)))) ,1);
+      envelopes = cos((1./tau *t - (1./tau).*freqs(:,4)*ones(1,length(t))) *2*acos(2^(-0.25))).^2;
+      %envelopes = cos(1./tau *t - 1./tau.*freqs(:,4)*ones(1,length(t)) *2*acos(2^(-0.25))).^2;
   else
-    A= -sum( (sqrt(freqs(:,2)*I0)./(freqs(:,1)*omega)*ones(1,length(t))) .*(ones(m,1)*cos(t/max(tau)*2*acos(2^(-0.25))).^2) .*(sin(freqs(:,1)*omega*t+(freqs(:,3))*ones(1,length(t)))) ,1);
+    envelopes = cos((ones(m,1)*t-freqs(:,4)*ones(1,length(t)))./max(tau)*2*acos(2^(-0.25))).^2;
+  end
+  % make sure that the envelopes are zero outside their central cos^2-peak
+  for n=1:m
+    envelopes(n,[ find(t-freqs(n,4)< -tlim(n)), find(t-freqs(n,4)> tlim(n)) ]) = 0;
   end
 end
 
-%just to be sure; in case t somehow reachesbeyond the longest
-%cos^2-envelope duration
-indxs=[find(t<-tlim),find(t>tlim)];
-A(indxs)=0;
+% sum up the vector-potentials
+A = -sum( (sqrt(freqs(:,2)*I0)./(freqs(:,1)*omega)*ones(1,length(t))) .* envelopes .*(sin(freqs(:,1)*omega*t-freqs(:,1)*omega.*freqs(:,4)*ones(1,length(t))+(freqs(:,3))*ones(1,length(t)))) ,1);
+    
+% 
+% %just to be sure; in case t somehow reaches beyond the longest
+% %cos^2-envelope duration
+% indxs=[find(t<-tlim),find(t>tlim)];
+% A(indxs)=0;
