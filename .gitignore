@@ -4,10 +4,9 @@
 /*.lnk
 /*.asv
 /*.txt
+*.aux
+*.log
 /batchscript*.m
 /plottocheckdivergence.m
 trajectories_for_plot.m
 /*backup*
-Olgas-lecture_Electron_recollision_and HHG.pdf
-*.aux
-*.log
