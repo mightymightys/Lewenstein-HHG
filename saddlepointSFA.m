@@ -4,14 +4,11 @@ pause on
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% simulation parameters
 
-%minEphot = 40 /27.2; %smallest harmonic photon energy you care about (we won't even look for quantum trajs. for smaller energies than that)
-
 if ~exist('nuclfactor','var')
     nuclfactor =0;
 end
 
-%Ip = (15.76+0.00) /27.2;  %ionization potential in a.u.  %Ar 15.76
-    if Ip>minEphot
+   if Ip>minEphot
        minEphot=Ip+.1;
     end
 
@@ -22,32 +19,66 @@ lambda=basewavelength*1e-9; %base-wavelength corresponding to base-freq. omega
 
 tau=pulseduration *1000/24.2;  %FWHM duration of the laser pulse, in a.u.
 
-tlim=pi/2 * max(tau) /2 /acos(2^(-0.25));  % limit of the time-window, where the cos^2-enevelope is zero
+t_0_au = t_0 *1000/24.2	 %relative delay of pulses in a.u.
+
+tlim=pi/2 *tau /2 /acos(2^(-0.25)) ;  % limits of the time-windows, where the cos^2-enevelopes are zero
 
 omega=2*pi*299792458/lambda *24.2e-18; %laser freq. in a.u.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% queries
 
-%maxNumCompThreads will be removed from future releases because they can't
-%control from within matlab anymore how many threads will be used. So
-% if ~exist('choice','var')
-%     choice = mymenu('How many CPU cores do you want to use?',{'One','Two','Three','Dunno, you decide.'}, 2);
-% end
-% if choice == 1
-%     maxNumCompThreads(1);
-%  elseif choice == 2
-%      maxNumCompThreads(2);
-%  elseif choice == 3
-%      maxNumCompThreads(3);
-%  elseif choice == 4
-%       maxNumCompThreads('automatic') 
-% else
-%      maxNumCompThreads('automatic') 
-%  end
-% 
-% disp(['Using max. ',num2str(maxNumCompThreads),' cpu cores.']);
-
+if ~exist('choice','var')
+    choice = mymenu('How many CPU cores do you want to use?',{'One','Two','Three','Dunno, you decide.'}, 2);
+end
+if choice == 1
+    maxNumCompThreads(1);
+%     if matlabpool('size') == 0 || matlabpool('size') == 1
+%     else
+%         matlabpool close force local 
+%     end
+ elseif choice == 2
+     maxNumCompThreads(2);
+%     if matlabpool('size') == 2
+%     elseif matlabpool('size') == 0
+%         matlabpool open local 2
+%     else
+%         matlabpool close force local 
+%         matlabpool open local 2
+%     end
+ elseif choice == 3
+     maxNumCompThreads(3);
+%     if matlabpool('size') == 3
+%     elseif matlabpool('size') == 0
+%         matlabpool open local 3
+%     else
+%         matlabpool close force local 
+%         matlabpool open local 3
+%     end
+ elseif choice == 4
+      maxNumCompThreads('automatic') 
+%     if matlabpool('size') == 4
+%     elseif matlabpool('size') == 0
+%         matlabpool open local 4
+%     else
+%         matlabpool close force local 
+%         matlabpool open local 4
+%     end
+else
+     maxNumCompThreads('automatic') 
+%     if matlabpool('size') == 2
+%     elseif matlabpool('size') == 0
+%         matlabpool open local 2
+%     else
+%         matlabpool close force local 
+%         matlabpool open local 2
+%     end
+ end
+% clear choice
+% pause(.5)
+disp(['Using max. ',num2str(maxNumCompThreads),' cpu cores.']);
 %saveimgs = mymenu('Do you want to save all the figures?',{'sure.','nope.'}, 1);
 %pause(.5)
 
@@ -56,15 +87,12 @@ disp('Results will be saved in:')
 disp(savepath)
 disp(savename)
 
-% CEPstp=.05;
-% CEP=(0:CEPstp:2-CEPstp);
-%CEP=0.9;
-%phi2=0.5;
+
 excursion=cell(2,2,length(CEP));
 for nCEP=1:length(CEP)
 tic
 
-freqs=ffreqs(CEP(nCEP),phi2);
+freqs=ffreqs(CEP(nCEP),phi2, t_0_au);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% fix up the functions for the set parameters (so as to avoid stupid global variables)
@@ -94,7 +122,12 @@ emissionampl = @(Ephotindx,Ephot,qevents,ps,acts)f_emissionamplitude(Ephotindx,E
     %lowestperiod = 1*2*pi/omega/min(freqs(:,1)); %x*one period of the lowest freq.component
     maxduration = longestexcursion*waveperiod;
        if fullpulse==1
-           t=(-2*tlim/3:tstp:2*tlim/3+maxduration);
+           if (t_0_au > 0)
+           t=(-2*tlim/3:tstp:2*tlim/3+maxduration+t_0_au);
+           end
+           if (t_0_au <= 0)
+           t=(-2*tlim/3+t_0_au:tstp:2*tlim/3+maxduration);
+           end
            %t=(-tlim:tstp:tlim+maxduration);  %(until x*periods of the lowest freq. component
                                                 %after the end of the pulse. this also effectively limits the 
                                                 %excursion times to be
@@ -104,16 +137,13 @@ emissionampl = @(Ephotindx,Ephot,qevents,ps,acts)f_emissionamplitude(Ephotindx,E
                Nperiods =1;
            end
            t=(-0.5*Nperiods*waveperiod:tstp:0.5*Nperiods*waveperiod+maxduration);
-           %t=(-9*lowestperiod:tstp:9*lowestperiod+maxduration);
        end
        
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % make vector with integrated vector potential (alpha) (to be used by classtraj)
         alpha=zeros(1,length(t));
          for n=2:length(t)
-             %alpha(n) = psalpha(-tlim,t(n));
-             %alpha(n) = alpha(n-1)+ psalpha(t(n-1),t(n));  %this really gives the exact same thing
-             alpha(n) = alpha(n-1) + trapz(fvecpot(t(n-1:n),I0,tau,omega,freqs,tlim))*tstp;
+            alpha(n) = alpha(n-1) + trapz(fvecpot(t(n-1:n),I0,tau,omega,freqs,tlim))*tstp;
                                                             %here, when you advance in very small time steps,
                                                             %trapz is totally good enough and muuuch faster. Even just summing up would do...
          end
@@ -171,6 +201,7 @@ clear m n aalpha tt I Ti dump classresult
 
 for i=1:numevents
     tmp(i) = max(classevents{1,i}(:,1));
+    %disp(i)
 end
 checkcutoff = max(tmp)+1.3*Ip;
 if checkcutoff>maxEphot
@@ -247,15 +278,12 @@ pause(2)
 %         end
 firstevent=1;
 lastevent=numevents;
-%firstevent=3;
-%lastevent=3;
 
-%Estp=.5/27.2;  %stepsize for photon energy-loop
-%Estp=omega*min(freqs(:,1))/2;
+
 if (~exist('Estp','var'))
     Estp = .5*2*pi/waveperiod;
 end
-%Estp=(maxEphot-minEphot)/400;
+
 Ephot = (minEphot:Estp:maxEphot)';
 
 shiftscale=250/max(Efield(t))/tstp;
@@ -294,15 +322,15 @@ disp(['finding quantum trajectories for ',num2str(numevents),' events...'])
                 %guessti = interp1(classevents{1,n}(:,1)+1.3*Ip, classevents{1,n}(:,2), Ephot(m)) +tishift;   
                     tmp=mean(diff(abs(Efield(guessti-10*tstp:tstp:guessti+10*tstp))));%if this is positive, the Efield-max is at larger t,
                                                                                  %and the ioniz.time-guess should be increased, or vice versa
-                    guessti=guessti+ tmp*shiftscale; %this is shifts the guess by a reasonable amount into the direction of the field peak
+                    guessti=guessti+ tmp*shiftscale; %this shifts the guess by a reasonable amount into the direction of the field peak
                 guesste=classevents{1,n}(k,3)-teshift;   
                 %guesste=interp1(classevents{1,n}(:,1)+1.3*Ip, classevents{1,n}(:,3), Ephot(m))-teshift;
                 x0=[guessti sqrt(2*Ip)/abs(Efield(guessti))  guesste  0];
             else
                 x0=tmpshort(m-1,1:4);
             end
-                tmpshort(m,1:4)=fsolve(f,x0,options);   %solve the saddle point eqs. (we get them with the right parameters via handle 'f')
-                tmpshort(m,5)=tmpshort(m,3)-tmpshort(m,1); %excursion time, while we're at it...
+                tmpshort(m,1:4) = fsolve(f,x0,options);   %solve the saddle point eqs. (we get them with the right parameters via handle 'f')
+                tmpshort(m,5) = tmpshort(m,3)-tmpshort(m,1); %excursion time, while we're at it...
         end
         %
         for m=Estartindx-1:-1:1
@@ -411,8 +439,6 @@ if interpfactor>1
     iqevents2 = zeros(length(Ephot),5);
     for n=1:numevents
         for m=1:5
-            %iqevents1(:,m) = interp(qevents{1,n}(:,m),interpfactor);
-            %iqevents2(:,m) = interp(qevents{2,n}(:,m),interpfactor);
             iqevents1(:,m) = interp1(Ephotorig, qevents{1,n}(:,m), Ephot,'spline');
             iqevents2(:,m) = interp1(Ephotorig, qevents{2,n}(:,m), Ephot,'spline');
         end
@@ -420,8 +446,6 @@ if interpfactor>1
         qevents{2,n} = iqevents2;
         clear iqevents1 iqevents2
         for m=1:2 %short and long
-            %acts{m,n} = [interp(acts{m,n}(:,1),interpfactor), interp(acts{m,n}(:,2),interpfactor)];
-            %ps{m,n}  = [interp(ps{m,n}(:,1),interpfactor),   interp(ps{m,n}(:,2),interpfactor)];
             acts{m,n} = [interp1(Ephotorig,acts{m,n}(:,1),Ephot,'spline'), interp1(Ephotorig, acts{m,n}(:,2), Ephot,'spline')];  %[Re ,Im]
             ps{m,n}   = [interp1(Ephotorig, ps{m,n}(:,1), Ephot,'spline'), interp1(Ephotorig, ps{m,n}(:,2),Ephot,'spline')];  %[Re ,Im]
         end
@@ -435,10 +459,6 @@ end
   
     emampl_raw=cell(size(qevents));
     emampl=cell(size(qevents));
-    %for n=1:numevents;
-    %    emampl{1,n} = emissionampl(1:length(Ephot),Ephot,qevents,ps,acts,1,n).';
-    %    emampl{2,n} = emissionampl(1:length(Ephot),Ephot,qevents,ps,acts,2,n).';
-    %end
     
     for n=1:numevents;
             emampl_raw{1,n} = emissionampl(1:length(Ephot),Ephot,qevents{1,n},ps{1,n},acts{1,n}).';
@@ -454,10 +474,10 @@ end
 %% put results together
     for n=1:numevents
       	results(:,n,nCEP) = {[qevents{1,n}(:,:), emampl{1,n}]; [qevents{2,n}(:,:),emampl{2,n}]; classevents{1,n}(:,:); classevents{2,n}(:,:)};
-        %classresults(:,n,nCEP) = {classevents{1,n}; classevents{2,n}};
     end
 
 toc
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %% plot results to check if everyhting goes well...
     close all;
@@ -506,10 +526,9 @@ end
 if (~exist(savepath, 'dir'))
        mkdir(savepath);
 end
-save([savepath,savename], 'results', 'Ephot', 'interpfactor', 'Ip', 'I0', 'ffreqs', 'CEP', 'phi2', 'lambda', 'omega', 't', 'tau', 'tlim', 'savepath', 'savename','-v7.3');
+save([savepath,savename], 'results', 'Ephot', 'interpfactor', 'Ip', 'I0', 'ffreqs', 'CEP', 'phi2', 't_0', 'lambda', 'omega', 't', 'tau', 'tlim', 'savepath', 'savename','-v7.3');
 
 
-%plotstuff
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
