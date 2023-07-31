@@ -1,5 +1,8 @@
 /results
 /*.lnk
+/*.asv
+/*.txt
 /batchscript*.m
 /plottocheckdivergence.m
+trajectories_for_plot.m
 /*backup*
