@@ -1,6 +1,6 @@
 /results
 /theory
-+/theory/saddlepoint.pdf
+!/theory/saddlepoint.pdf
 /*.lnk
 /*.asv
 /*.txt
