@@ -1,0 +1,163 @@
+
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc} 
+
+\usepackage{geometry} % to change the page dimensions
+\geometry{a4paper} % or letterpaper (US) or a5paper or....
+% \geometry{margins=2in} % for example, change the margins to 2 inches all round
+% \geometry{landscape} % set up the page for landscape
+%   read geometry.pdf for detailed page layout information
+
+\usepackage{graphicx} % support the \includegraphics command and options
+
+\usepackage{mathpazo}				% Zapf Palatino font as default roman. Math in Palatino where possible
+\usepackage{amsmath,amssymb,MnSymbol} %
+\usepackage{bm}		% bold greek 
+\usepackage{braket}          % braket: Macros for Dirac bra-ket <|> notation and sets {|}'
+\usepackage{array}           % Extends the implementation of array- and tabular-enviroments
+\usepackage[numbers,square,comma,sort&compress]{natbib}
+\usepackage{cancel}
+
+%%% PACKAGES
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+% These packages are all incorporated in the memoir class to one degree or another...
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy} % options: empty , plain , fancy
+\renewcommand{\headrulewidth}{0pt} % customise the layout...
+\lhead{}\chead{}\rhead{}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+%%% SECTION TITLE APPEARANCE
+\usepackage{sectsty}
+\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+% (This matches ConTeXt defaults)
+
+%%% ToC (table of contents) APPEARANCE
+\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+\newcommand{\rmi}{\mathrm i}
+\newcommand{\ti}{t_\rmi}
+\newcommand{\tr}{t_\mathrm{r}}
+\newcommand{\rmd}{\mathrm d}
+\newcommand{\Ip}{I_{\mathrm p}}
+\newcommand{\ps}{p_{\mathrm s}}
+\newcommand{\cc}{\mathrm c.c.}
+%%% END Article customizations
+
+%%% The "real" document content comes below...
+
+\title{How to solve the (non-adiabatic) saddle-point equations for the Lewenstein HHG theory}
+\author{S. Haessler}
+%\date{} % Activate to display a given date or no date (if empty),
+         % otherwise the current date is printed 
+
+\begin{document}
+\maketitle
+
+Everything here will be in atomic units. 
+
+\section{The Lewenstein model and the staionary phase approximation(s)}
+
+The time-dependent dipole expectation value, $x(t)$, found by Lewenstein et al.   \cite{Lewenstein1994Theory} is a quadruple integral:
+\begin{equation}
+	\mathbf{x}(t)	=  \rmi \int_{-\infty}^t \rmd t' \int_{-\infty}^\infty \rmd^3 p \,\mathbf{E}(t') \mathbf{d}[\mathbf{p}+\mathbf{A}(t')] \,\exp[\rmi S(p,t',t)] \,\mathbf{d}^* [\mathbf{p}+\mathbf{A}(t)] + \cc,  \label{eq:lewint}
+\end{equation}
+where $\mathbf{p}$ is the canonical (drift) momentum of the continuum electron, $\mathbf{d}[\mathbf{k}]=\langle \mathbf{k}\vert \hat{\mathbf{x}}\vert\psi_0\rangle$ is the dipole matrix element for bound-free transitions (with the plane-wave approximation), the star denotes complex conjugation, $\mathbf{E}(t)$ is the laser electric field,
+\begin{equation}
+	\mathbf{A}(t)=-\int_{-\infty}^t \rmd t''\, \mathbf{E}(t'')
+\end{equation}
+is the vector potential, and the quasi-classical action, $S$, is 
+\begin{equation}
+	S(\mathbf{p},t',t)	=  -\int_{t'}^t \rmd t'' \left[ \frac{ [\mathbf{p}+\mathbf{A}(t'')]^2}{2} + \Ip \right].  \label{eq:action}
+\end{equation}
+Here, the instants $t'$ and $t$ can be understood as `birth' and `recollision' instants of infinitely many considered electron quantum trajectories.
+ 
+For a hydrogen 1s ground state, scaled to have an energy of $-\Ip$, the dipole matrix element reads  \cite{Lewenstein1994Theory}:
+\begin{equation}
+	\mathbf{d}(k)	=  \rmi \left( \frac{2^{7/2}\,  (2\Ip)^{5/4}}{\pi} \right)  \frac{\mathbf{k}}{(\mathbf{k}^2+2\Ip)^3}.
+\end{equation}
+Attention: in case of complex-valued momenta (see later), the square here is a ``complex square'', i.e. $z\cdot z^*$. You can of course try to use other matrix elements to model p states or so, or you can just set them to unity of you don't care for any influence of the atomic structure (and for normalization of your wavefunction...). These matrix elements are anyway the point where the plane-wave approximation fails most miserably and it takes some effort to get any realism in here (see \cite{Le2009QRS}).
+
+Since the action (\ref{eq:action}) is a rather rapidly varying phase term, the calculations of the integrals can be simplified a lot by finding the points where $S$ is stationary, and then expand the action around those stationary points. This allows to transform the integrals to a sum over the stationary points. This means that you pick out dominating quantum trajectories. Doing so only for the momentum, $\mathbf{p}$, yields 
+\begin{equation}
+	\mathbf{x}(t)	=  \rmi \int_{-\infty}^t \rmd t'  \left[ \frac{\pi}{\varepsilon + \rmi(t-t')/2} \right]^{3/2}  \,\mathbf{E}(t') \mathbf{d}[\mathbf{\ps}+\mathbf{A}(t')] \,\exp[\rmi S(\ps,t',t)] \,\mathbf{d}^* [\mathbf{\ps}+\mathbf{A}(t)] + \cc, 
+\end{equation}
+where $\varepsilon$ is a tiny positive regularization constant (say, $\varepsilon=10^{-6}$), and $\ps$ is the stationary momentum, obtained by:
+\begin{align}
+	\nabla_\mathbf{p}  S& = \int_{t'}^{t} \rmd t' \,[\mathbf{p}+\mathbf{A}(t')] =\hspace{-2.3mm}^{!}\hspace{2.3mm} 0,  \\
+	\Rightarrow  \mathbf{\ps}& = \frac{-\bm{\alpha}_{t',t}}{t-t'} , \quad \mathrm{with }\quad \bm{\alpha}_{t',t} = \int_{t'}^t \rmd t'\,\mathbf{A}(t') .
+\end{align}
+
+The complex harmonic spectrum, $\bm{\epsilon}(\omega)$, is proportional to $\omega^2 \mathbf{x}(\omega)$ (if the recombination dipole matrix element is taken in `length form' \cite{Haessler2011tutorial}). Fourier transforming $ \mathbf{x}(t)$ yields:
+\begin{equation}
+	 \mathbf{x}(\omega) = \int_{-\infty}^\infty \rmd t\,  \mathbf{x}(t) \,\exp[\rmi\omega t] = \int_{-\infty}^\infty \rmd t\, \int_{-\infty}^t \rmd t' \, ...
+\end{equation}
+
+You can go on and make the stationary phase approximation also for the two time-variables, which finally transforms the  sinister-looking multiple integral to a sum over a finite number of contributing quantum trajectories \cite{Lewenstein1995Rings,Lewenstein1995,Sansone2004nonadiabatic}:
+\begin{multline}
+	 \mathbf{x}(\omega) = \sum_\mathrm{s} \frac{\rmi2\pi}{\left[\mathrm{det}(\partial^2(S+\omega t))\right]^{1/2} }  \left[ \frac{\pi}{\varepsilon + \rmi(\tr-\ti)/2} \right]^{3/2}  \,\mathbf{E}(\ti) \mathbf{d}[\mathbf{\ps}+\mathbf{A}(\ti)]\,\mathbf{d}^* [\mathbf{\ps}+\mathbf{A}(\tr)] \\
+	\times  \exp[\rmi S(\ps,\ti,\tr) + \rmi\omega\tr], 
+\end{multline}
+where 
+\begin{equation}
+	\mathrm{det}[\partial^2(S+\omega t)]= \left( \frac{\partial^2(S+\omega t)}{\partial t\partial t'}  \right)^2 - \frac{\partial^2(S+\omega t)}{\partial t^2}\frac{\partial^2(S+\omega t)}{\partial t'^2},
+\end{equation}
+where
+\begin{align}
+	\frac{\partial^2(S+\omega t)}{\partial t\partial t'}& = \frac{[\ps + A(\tr)]\,[\ps + A(\ti)]}{\tr-\ti},\\
+	\frac{\partial^2(S+\omega t)}{\partial t^2}	& = -\frac{2(\omega-\Ip)}{\tr-\ti} + E(\tr)[\ps + A(\tr)],\\
+	\frac{\partial^2(S+\omega t)}{\partial t'^2}	& = \frac{2\Ip)}{\tr-\ti} - E(\ti)[\ps + A(\ti)].
+\end{align}
+The quantum trajectories are the triplets $(\ps,\ti,\tr)$, stationary momentum, ionization instant and recollision instant, which are found by solving the system of three saddle point equations resulting from setting $\rmd (S+\omega t) = 0$:
+\begin{align}
+	\frac{-\bm{\alpha}_{\ti,\tr}}{\tr-\ti}& = \mathbf{\ps},  \label{eq:SPp}\\
+	[\mathbf{\ps}+\mathbf{A}(\ti)]^2 + 2\Ip & =0,\label{eq:SPti}\\
+	[\mathbf{\ps}+\mathbf{A}(\tr)]^2 + 2\Ip -2\omega& =0. \label{eq:SPtr}
+\end{align}
+Eq. (\ref{eq:SPti}) can only be fulfilled with complex-valued times, which is one of the odd consequences of tunneling (the imaginary part of the birth time $\ti$ can be understood as a tunneling delay).
+
+\section{Solving the saddle point equations}
+
+Firstly, we consider in the following that the laser field, $E(t)$, is linearly polarized (i.e. also that the polarizations of all possible color-components are parallel). This means that everything can be described in 1 spatial dimension and all fields, momenta and matrix elements will simply be scalars. However, extending everything to 3D is not a big change, as demonstrated in \cite{Kovacs2010saddlepoint}.
+
+Secondly, now that we work with complex arguments, we have to make clear that \emph{(i)} the squares in (\ref{eq:SPti}) and (\ref{eq:SPtr}) are to be exeuted as `proper squares', i.e. $z^2=(a+\rmi b)^2=a^2 - b^2 + 2\rmi ab)$, \emph{not} as `norm'-squares (i.e. $z\cdot z^*=a^2+b^2$), and \emph{(ii)} the integrals for $A$ and $\alpha$ now are path integrals in the complex plane. Luckily our functions are friendly and Cauchy's integral theorem tells us that the value of the integral will be independent of the path. 
+
+\emph{(iii)} The solutions to the saddle-point equations  (\ref{eq:SPp})-(\ref{eq:SPtr}) come in pairs that are each other's complex conjugate. You have to check that you pick the one that makes the imaginary part of the stationary action \emph{positive}, giving an exponential \emph{decrease} of the transition amplitude rather than an unphysical boost \cite{Lewenstein1995}. 
+
+\emph{(iv)} Even if you do this, in the cutoff region of photon energies and beyond, the ``short'' trajectory branch becomes unphysical because the imaginary part of its ionization time will diverge in a direction that will make the stationary action diverge in the negative direction and thus will make its contribution to HHG diverge. So in this energy region, only the ``long'' trajectory branch will represent physical solutions, and the contribution of the short one will have to be shut off (in some smooth fashion) \cite{Lewenstein1995}. I'll discuss later where and how I do this. By the way, this is also the the energy-region, where the strange crossing of the ionization-time-curves for long and short trajectories occurs. This crossing is thus also unphysical because at higher energies, \emph{only the long trajectories} remains valid and the points for the short ones are to be discarded. 
+
+[MAYBE ILLUSTRATE ALL THIS LATER WITH PLOTS...]
+
+The form in which the system (\ref{eq:SPp})-(\ref{eq:SPtr}) can easily be solved numerically, is obtained as follows:\\
+In (\ref{eq:SPp}), separate real and imaginary parts:
+\begin{align}
+	\Re(\ps)& = -\frac{[\Re(\tr)-\Re(\ti)]\,\Re(\alpha_{\ti,\tr}) \,+\, [\Im(\tr)-\Im(\ti)]\,\Im(\alpha_{\ti,\tr})}{[\Re(\tr)-\Re(\ti)]^2+[\Im(\tr)-\Im(\ti)]^2}\, , \\
+	\Im(\ps)& = \frac{[\Im(\tr)-\Im(\ti)]\Re(\alpha_{\ti,\tr}) - [\Re(\tr)-\Re(\ti)]\Im(\alpha_{\ti,\tr})}{[\Re(\tr)-\Re(\ti)]^2+[\Im(\tr)-\Im(\ti)]^2}\, .
+\end{align}
+Insert this  into (\ref{eq:SPti}) and (\ref{eq:SPtr}), and again separate real and imaginary parts (which have to vanish individually), which yields four equations for the four unknowns $\Re(\ti)$, $\Im(\ti)$, $\Re(\tr)$ and $\Im(\tr)$:
+\begin{align}
+	\text{(\ref{eq:SPti})} \rightarrow&&   \cancel{[\Re(\ps) + \Re(A(\ti))]^2} -  [\Im(\ps) + \Im(A(\ti))]^2 +2\Ip& = 0, \label{eq:SP1} \\
+					     &&   [\Re(\ps) + \Re(A(\ti))]\, \cancel{[\Im(\ps) + \Im(A(\ti))]}& = 0,  \label{eq:SP2} \\
+ 	\text{(\ref{eq:SPtr})}\rightarrow&&     [\Re(\ps) + \Re(A(\tr))]^2 -  [\Im(\ps) + \Im(A(\tr))]^2 +2\Ip - 2\omega& = 0,  \label{eq:SP3} \\
+					     &&  [\Re(\ps) + \Re(A(\tr))]\, [\Im(\ps) + \Im(A(\tr))]& = 0, \label{eq:SP4} 
+\end{align}
+where we could in principle strike out two terms because in (\ref{eq:SP2}), one of the two factors needs to vanish, while in (\ref{eq:SP1}), the second member must \emph{not} vanish in order to compensate for the $2\Ip$---so it is the first factor in (\ref{eq:SP2}) that has to vanish always. But it occurs that the solution-algorithm has less of a tendency to converge to gigantic imaginary parts for strange trajectories when the terms remain as they are.
+
+This system can be solved for $[\Re(\tr), \Im(\tr), \Re(\ti), \Im(\ti)]$ as function of harmonic frequency $\omega$ with methods for the solution of coupled nonilnear equations, such as the Matlab funtion \emph{fsolve} (which uses a `trust-region-dogleg' algorithm by default - whatever this is precisely...). These methods start from a first guess. Of course one could just scan over a (4D) grid of possible first guesses for each $\omega$ and then pick out the unique solutions, but that would take forever. It is much smarter to use classical solutions for $\ti$ and $\tr$ as a first guess, which will also give you some control over `what kinds of trajectories' you are going to find.
+
+
+
+%\bibliographystyle{iopart-num}
+\bibliographystyle{nature}
+\bibliography{bib/stefan}
+
+\end{document}
