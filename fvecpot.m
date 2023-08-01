@@ -35,8 +35,12 @@ else
 end
 
 % sum up the vector-potentials
-A = -sum( (sqrt(freqs(:,2)*I0)./(freqs(:,1)*omega)*ones(1,length(t))) .* envelopes .*(sin(freqs(:,1)*omega*t-freqs(:,1)*omega.*freqs(:,4)*ones(1,length(t))+(freqs(:,3))*ones(1,length(t)))) ,1);
-    
+A = -sum((sqrt(freqs(:,2)*I0)./(freqs(:,1)*omega)*ones(1,length(t))) .* envelopes...
+    .*sin( freqs(:,1)*omega.*(ones(m,1)*t - freqs(:,4)*ones(1,length(t)))...
+          +(freqs(:,3))*ones(1,length(t))...
+          + freqs(:,5).*(ones(m,1)*t-freqs(:,4)*ones(1,length(t))).*conj(ones(m,1)*t-freqs(:,4)*ones(1,length(t)))...
+          ) ,1);
+
 % 
 % %just to be sure; in case t somehow reaches beyond the longest
 % %cos^2-envelope duration
